@@ -167,8 +167,6 @@ export default ObjectProxy.extend(Evented, {
 
   _bindToAuthenticatorEvents() {
     const authenticator = this._lookupAuthenticator(this.authenticator);
-    authenticator.off('sessionDataUpdated');
-    authenticator.off('sessionDataInvalidated');
     authenticator.on('sessionDataUpdated', (content) => {
       this._setup(this.authenticator, content);
     });
