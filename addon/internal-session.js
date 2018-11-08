@@ -49,7 +49,7 @@ export default ObjectProxy.extend(Evented, {
 
     let authenticator = this._lookupAuthenticator(this.authenticator);
     return authenticator.invalidate(this.content.authenticated, ...arguments).then(() => {
-      authenticator.off('sessionDataUpdated');
+      authenticator.off('sessionDataUpdated', this._listener1);
       this._busy = false;
       return this._clear(true);
     }, (error) => {
@@ -167,12 +167,17 @@ export default ObjectProxy.extend(Evented, {
 
   _bindToAuthenticatorEvents() {
     const authenticator = this._lookupAuthenticator(this.authenticator);
-    authenticator.on('sessionDataUpdated', (content) => {
+    authenticator.off('sessionDataUpdated', this._listener1);
+    authenticator.off('sessionDataInvalidated', this._listener2);
+
+    this._listener1 = (content) => {
       this._setup(this.authenticator, content);
-    });
-    authenticator.on('sessionDataInvalidated', () => {
+    };
+    this._listener2 = () => {
       this._clear(true);
-    });
+    }
+    authenticator.on('sessionDataUpdated', this._listener1);
+    authenticator.on('sessionDataInvalidated', this._listener2);
   },
 
   _bindToStoreEvents() {
